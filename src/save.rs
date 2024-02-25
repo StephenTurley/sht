@@ -20,12 +20,9 @@ pub fn save_all(path: &PathBuf) -> Result<()> {
                 save_all(&path)?;
             }
         } else {
-            dbg!(&path);
-            blob::create(&path)?;
+            let blob = blob::create(&path)?;
+            blob.write()?;
         }
     }
     Ok(())
 }
-
-
-
