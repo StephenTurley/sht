@@ -29,7 +29,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::Init) => init(),
-        Some(Commands::Save) => save::save_all(std::env::current_dir()?),
+        Some(Commands::Save) => save::save_all(&std::env::current_dir()?),
         None => Ok(()),
     }
 }

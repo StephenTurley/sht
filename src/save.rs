@@ -6,17 +6,21 @@
 //      3. Remove any files/dirs that are in index but not the working dirs
 //      5. Add any files/dirs that have changed from what is in the HEAD tree
 //
-use crate::blob;
+use crate::{blob, REPO_ROOT};
 use anyhow::Result;
 use std::{fs, path::PathBuf};
 
-pub fn save_all(path: PathBuf) -> Result<()> {
+pub fn save_all(path: &PathBuf) -> Result<()> {
+    // todo create tree
     for entry in fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
         if path.is_dir() {
-            // create_tree
+            if path != std::env::current_dir()?.join(REPO_ROOT) {
+                save_all(&path)?;
+            }
         } else {
+            dbg!(&path);
             blob::create(&path)?;
         }
     }
