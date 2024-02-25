@@ -5,8 +5,9 @@ use std::path::Path;
 use thiserror::Error;
 
 pub mod blob;
-pub mod index;
 pub mod save;
+
+static REPO_ROOT: &str = "./.sht";
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -22,17 +23,13 @@ enum Commands {
     Init,
     /// Save all files not explicitly ignored in the current working directory
     Save,
-    Hash {
-        file: String,
-    },
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::Init) => init(),
-        Some(Commands::Save) => save(),
-        Some(Commands::Hash { file }) => blob::create(file),
+        Some(Commands::Save) => save::save_all(std::env::current_dir()?),
         None => Ok(()),
     }
 }
@@ -43,16 +40,11 @@ enum InitializationErrors {
     RepositoryExists,
 }
 
-fn save() -> Result<()> {
-    Ok(())
-}
-
 fn init() -> Result<()> {
     if Path::new("/.sht").exists() {
         bail!(InitializationErrors::RepositoryExists)
     }
-    fs::create_dir("./.sht")?;
-    fs::File::create("./.sht/index")?;
+    fs::create_dir(REPO_ROOT)?;
     fs::File::create("./.shtignore")?;
     Ok(())
 }

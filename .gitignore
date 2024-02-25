@@ -1,3 +1,5 @@
 /target
 .sht/
 .shtignore
+/test_repo
+
