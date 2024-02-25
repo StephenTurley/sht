@@ -13,11 +13,7 @@ pub fn create(path: &PathBuf) -> Result<()> {
     hasher.update(&header);
     hasher.update(&contents);
 
-    // todo build this using Path so it works on other all OSs.
-    // also it should not create the blob if it exists
-    // should add the "blob" header so we can figure out what it is later
     let digest = format!("{:x}", hasher.finalize());
-    // let dir = format!("{}/objects/{}", REPO_ROOT, &digest[0..3]);
     let blob_path = std::env::current_dir()?
         .join(REPO_ROOT)
         .join("objects/")
