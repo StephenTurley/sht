@@ -5,9 +5,8 @@ use std::fs;
 use std::path::Path;
 use thiserror::Error;
 
-pub mod blob;
+pub mod object;
 pub mod save;
-pub mod tree;
 
 static REPO_ROOT: &str = "./.sht";
 

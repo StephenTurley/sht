@@ -6,9 +6,22 @@ use anyhow::Result;
 
 use crate::REPO_ROOT;
 
+use super::Object;
+
+#[derive(Debug)]
 pub struct Blob {
     digest: String,
     content: Vec<u8>,
+}
+
+impl Object for Blob {
+    fn digest(&self) -> &str {
+        &self.digest
+    }
+
+    fn t<'a>(&self) -> &'a str {
+        "blob"
+    }
 }
 
 impl Blob {
