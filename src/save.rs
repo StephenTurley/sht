@@ -11,8 +11,8 @@ use anyhow::Result;
 use relative_path::RelativePath;
 
 pub fn save_all(path: &RelativePath) -> Result<()> {
-    println!("Path: {:?}", path);
     let tree = Tree::create(path)?;
-    println!("{}", tree.content);
+    tree.write_all()?;
+
     Ok(())
 }
