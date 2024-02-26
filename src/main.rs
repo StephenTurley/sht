@@ -1,11 +1,13 @@
 use anyhow::{bail, Result};
 use clap::{Parser, Subcommand};
+use relative_path::RelativePath;
 use std::fs;
 use std::path::Path;
 use thiserror::Error;
 
 pub mod blob;
 pub mod save;
+pub mod tree;
 
 static REPO_ROOT: &str = "./.sht";
 
@@ -29,7 +31,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::Init) => init(),
-        Some(Commands::Save) => save::save_all(&std::env::current_dir()?),
+        Some(Commands::Save) => save::save_all(RelativePath::new("./")),
         None => Ok(()),
     }
 }
@@ -41,10 +43,10 @@ enum InitializationErrors {
 }
 
 fn init() -> Result<()> {
-    if Path::new("/.sht").exists() {
+    if Path::new(REPO_ROOT).exists() {
         bail!(InitializationErrors::RepositoryExists)
     }
     fs::create_dir(REPO_ROOT)?;
-    fs::File::create("./.shtignore")?;
+    fs::File::create(".shtignore")?;
     Ok(())
 }

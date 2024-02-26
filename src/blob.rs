@@ -29,16 +29,15 @@ impl Blob {
         file.write_all(&self.content)?;
         Ok(())
     }
-}
+    pub fn create(path: &PathBuf) -> Result<Blob> {
+        let mut hasher = Sha256::new();
+        let mut content: Vec<u8> = Vec::new();
 
-pub fn create(path: &PathBuf) -> Result<Blob> {
-    let mut hasher = Sha256::new();
-    let mut content: Vec<u8> = Vec::new();
+        content.append(&mut "blob\n".as_bytes().to_owned());
+        content.append(&mut fs::read(path)?);
+        hasher.update(&content);
 
-    content.append(&mut "blob\n".as_bytes().to_owned());
-    content.append(&mut fs::read(path)?);
-    hasher.update(&content);
-
-    let digest = format!("{:x}", hasher.finalize());
-    Ok(Blob { digest, content })
+        let digest = format!("{:x}", hasher.finalize());
+        Ok(Blob { digest, content })
+    }
 }
