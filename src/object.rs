@@ -19,15 +19,20 @@ pub trait Object {
             .join("objects/")
             .join(&self.digest()[0..3]);
 
-        fs::create_dir_all(&blob_path)?;
+        if !blob_path.exists() {
+            fs::create_dir_all(&blob_path)?;
+        }
         let file_name = blob_path.join(&self.digest()[3..]);
-        let mut file = fs::OpenOptions::new()
-            .write(true)
-            .create(true)
-            .append(true)
-            .open(file_name)?;
 
-        file.write_all(self.content())?;
+        if !file_name.exists() {
+            let mut file = fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .append(false)
+                .open(file_name)?;
+
+            file.write_all(self.content())?;
+        }
         Ok(())
     }
 }
