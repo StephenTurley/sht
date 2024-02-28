@@ -1,12 +1,12 @@
 use anyhow::{bail, Result};
 use clap::{Parser, Subcommand};
+use object::save;
 use relative_path::RelativePath;
 use std::fs;
 use std::path::Path;
 use thiserror::Error;
 
 pub mod object;
-pub mod save;
 
 static REPO_ROOT: &str = "./.sht";
 
@@ -30,7 +30,11 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::Init) => init(),
-        Some(Commands::Save) => save::save_all(RelativePath::new("./")),
+        Some(Commands::Save) => {
+            // todo: only save if there are changes
+            save::save_all(RelativePath::new("./"))?;
+            Ok(())
+        }
         None => Ok(()),
     }
 }

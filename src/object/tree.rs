@@ -88,6 +88,7 @@ impl Tree {
     }
 }
 
+// maybe reuse this in Save?
 fn append_content<T: Object>(s: &mut Vec<u8>, entries: &[Entry<T>]) {
     for entry in entries.iter() {
         let entry_s = format!(
