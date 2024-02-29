@@ -9,7 +9,7 @@ use super::Object;
 pub struct Save {
     timestamp: DateTime<Utc>,
     digest: String,
-    content: Vec<u8>,
+    content: String,
 }
 
 impl Object for Save {
@@ -17,7 +17,7 @@ impl Object for Save {
         &self.digest
     }
 
-    fn content(&self) -> &Vec<u8> {
+    fn content(&self) -> &str {
         &self.content
     }
 
@@ -29,16 +29,12 @@ impl Object for Save {
 pub fn save_all(path: &RelativePath) -> Result<Save> {
     let tree = Tree::create(path)?;
     let timestamp = chrono::Utc::now();
-    let mut content: Vec<u8> = Vec::new();
+    let mut content: String = String::new();
 
     // todo OMG JUST USE A STRING
-    content.append(&mut timestamp.to_rfc3339().as_bytes().to_owned());
-    content.append(&mut "\n".as_bytes().to_owned());
-    content.append(
-        &mut format!("tree {} {}\n", path, tree.digest())
-            .as_bytes()
-            .to_owned(),
-    );
+    content.push_str(&timestamp.to_rfc3339());
+    content.push('\n');
+    content.push_str(&format!("tree {} {}\n", path, tree.digest()));
     let mut hasher = Sha256::new();
 
     hasher.update(&content);

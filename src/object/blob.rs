@@ -7,7 +7,7 @@ use anyhow::Result;
 #[derive(Debug)]
 pub struct Blob {
     digest: String,
-    content: Vec<u8>,
+    content: String,
 }
 
 impl Object for Blob {
@@ -19,7 +19,7 @@ impl Object for Blob {
         "blob"
     }
 
-    fn content(&self) -> &Vec<u8> {
+    fn content(&self) -> &str {
         &self.content
     }
 }
@@ -27,9 +27,7 @@ impl Object for Blob {
 impl Blob {
     pub fn create(path: &PathBuf) -> Result<Blob> {
         let mut hasher = Sha256::new();
-        let mut content: Vec<u8> = Vec::new();
-
-        content.append(&mut fs::read(path)?);
+        let content: String = fs::read_to_string(path)?;
         hasher.update(&content);
 
         let digest = format!("{:x}", hasher.finalize());

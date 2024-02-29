@@ -12,7 +12,7 @@ pub struct Tree {
     digest: String,
     blobs: Vec<Entry<Blob>>,
     trees: Vec<Entry<Tree>>,
-    content: Vec<u8>,
+    content: String,
 }
 
 #[derive(Debug)]
@@ -30,7 +30,7 @@ impl Object for Tree {
         "tree"
     }
 
-    fn content(&self) -> &Vec<u8> {
+    fn content(&self) -> &str {
         &self.content
     }
 }
@@ -50,7 +50,7 @@ impl Tree {
         // todo this needs to always be in the same order
         let mut blobs: Vec<Entry<Blob>> = Vec::new();
         let mut trees: Vec<Entry<Tree>> = Vec::new();
-        let mut content: Vec<u8> = Vec::new();
+        let mut content: String = String::new();
 
         for entry in fs::read_dir(path.to_path(""))? {
             let entry = entry?;
@@ -89,7 +89,7 @@ impl Tree {
 }
 
 // maybe reuse this in Save?
-fn append_content<T: Object>(s: &mut Vec<u8>, entries: &[Entry<T>]) {
+fn append_content<T: Object>(s: &mut String, entries: &[Entry<T>]) {
     for entry in entries.iter() {
         let entry_s = format!(
             "{} {} {}\n",
@@ -97,6 +97,6 @@ fn append_content<T: Object>(s: &mut Vec<u8>, entries: &[Entry<T>]) {
             entry.path,
             entry.object.digest()
         );
-        s.append(&mut entry_s.as_bytes().to_owned());
+        s.push_str(&entry_s);
     }
 }

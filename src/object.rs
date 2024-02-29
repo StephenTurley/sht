@@ -10,7 +10,7 @@ use crate::REPO_ROOT;
 
 pub trait Object {
     fn digest(&self) -> &str;
-    fn content(&self) -> &Vec<u8>;
+    fn content(&self) -> &str;
     fn t<'a>(&self) -> &'a str;
 
     fn write(&self) -> Result<()> {
@@ -31,7 +31,7 @@ pub trait Object {
                 .append(false)
                 .open(file_name)?;
 
-            file.write_all(self.content())?;
+            file.write_all(self.content().as_bytes())?;
         }
         Ok(())
     }
