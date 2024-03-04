@@ -10,6 +10,7 @@ use super::Object;
 
 pub struct Save {
     timestamp: DateTime<Utc>,
+    tree: Tree,
     digest: String,
     content: String,
 }
@@ -28,28 +29,40 @@ impl Object for Save {
     }
 }
 
+impl Save {
+    pub fn create(path: &RelativePath) -> Result<Save> {
+        let tree = Tree::create(path)?;
+        let timestamp = chrono::Utc::now();
+        let mut content: String = String::new();
+
+        content.push_str(&timestamp.to_rfc3339());
+        content.push('\n');
+        content.push_str(&format!("tree {} {}\n", path, tree.digest()));
+        let mut hasher = Sha256::new();
+
+        hasher.update(&content);
+
+        let digest = format!("{:x}", hasher.finalize());
+        let save = Save {
+            timestamp,
+            tree,
+            digest,
+            content,
+        };
+
+        Ok(save)
+    }
+
+    pub fn write_all(&self) -> Result<()> {
+        self.write()?;
+        self.tree.write_all()?;
+        Ok(())
+    }
+}
+
 pub fn execute(path: &RelativePath) -> Result<Save> {
-    let tree = Tree::create(path)?;
-    let timestamp = chrono::Utc::now();
-    let mut content: String = String::new();
-
-    content.push_str(&timestamp.to_rfc3339());
-    content.push('\n');
-    content.push_str(&format!("tree {} {}\n", path, tree.digest()));
-    let mut hasher = Sha256::new();
-
-    hasher.update(&content);
-
-    let digest = format!("{:x}", hasher.finalize());
-    let save = Save {
-        timestamp,
-        content,
-        digest,
-    };
-
-    save.write()?;
-    tree.write_all()?;
-
+    let save = Save::create(path)?;
+    save.write_all()?;
     // set HEAD
     let head_path = std::env::current_dir()?.join(REPO_ROOT).join("HEAD");
     fs::write(head_path, &save.digest)?;
