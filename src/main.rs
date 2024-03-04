@@ -32,7 +32,7 @@ fn main() -> Result<()> {
         Some(Commands::Init) => init(),
         Some(Commands::Save) => {
             // todo: only save if there are changes
-            save::save_all(RelativePath::new("./"))?;
+            save::execute(RelativePath::new("./"))?;
             Ok(())
         }
         None => Ok(()),

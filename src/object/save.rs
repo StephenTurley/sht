@@ -1,4 +1,6 @@
-use crate::object::tree::Tree;
+use std::fs;
+
+use crate::{object::tree::Tree, REPO_ROOT};
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use relative_path::RelativePath;
@@ -26,12 +28,11 @@ impl Object for Save {
     }
 }
 
-pub fn save_all(path: &RelativePath) -> Result<Save> {
+pub fn execute(path: &RelativePath) -> Result<Save> {
     let tree = Tree::create(path)?;
     let timestamp = chrono::Utc::now();
     let mut content: String = String::new();
 
-    // todo OMG JUST USE A STRING
     content.push_str(&timestamp.to_rfc3339());
     content.push('\n');
     content.push_str(&format!("tree {} {}\n", path, tree.digest()));
@@ -45,9 +46,13 @@ pub fn save_all(path: &RelativePath) -> Result<Save> {
         content,
         digest,
     };
-    save.write()?;
 
+    save.write()?;
     tree.write_all()?;
+
+    // set HEAD
+    let head_path = std::env::current_dir()?.join(REPO_ROOT).join("HEAD");
+    fs::write(head_path, &save.digest)?;
 
     Ok(save)
 }

@@ -14,6 +14,7 @@ pub trait Object {
     fn t<'a>(&self) -> &'a str;
 
     fn write(&self) -> Result<()> {
+        // TODO use relative path here?
         let blob_path = std::env::current_dir()?
             .join(REPO_ROOT)
             .join("objects/")
