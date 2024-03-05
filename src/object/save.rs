@@ -1,14 +1,19 @@
 use std::fs;
 
-use crate::{object::tree::Tree, REPO_ROOT};
+use crate::{
+    object::tree::{self, Tree},
+    REPO_ROOT,
+};
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use relative_path::RelativePath;
 use sha2::{Digest, Sha256};
 
-use super::Object;
+use super::{Object, ObjectPath};
 
 pub struct Save {
+    // TODO remove this when log implemented
+    #[allow(dead_code)]
     timestamp: DateTime<Utc>,
     tree: Tree,
     digest: String,
@@ -58,21 +63,52 @@ impl Save {
         self.tree.write_all()?;
         Ok(())
     }
+
+    pub fn load(hash: &str) -> Result<Save> {
+        let file = ObjectPath::from(hash).file_name;
+        let content = fs::read_to_string(file)?;
+        let mut lines = content.lines();
+        let timestamp: DateTime<Utc> = lines
+            .next()
+            .unwrap()
+            .parse()
+            .expect("Could not parse timestamp");
+
+        let tree_line = lines.next().unwrap();
+        let tree_parts: Vec<&str> = tree_line.split_whitespace().collect();
+        let tree = tree::Tree::load(tree_parts[2])?;
+
+        Ok(Save {
+            timestamp,
+            tree,
+            digest: hash.to_string(),
+            content,
+        })
+    }
 }
 
-//return Save object
-// pub fn load(hash: &str) -> Result<()> {
-//     object_path(hash).join(&hash[3..]);
-//
-//     Ok(())
-// }
-//
 pub fn execute(path: &RelativePath) -> Result<Save> {
-    let save = Save::create(path)?;
-    save.write_all()?;
-    // set HEAD
+    let new_save = Save::create(path)?;
     let head_path = std::env::current_dir()?.join(REPO_ROOT).join("HEAD");
-    fs::write(head_path, &save.digest)?;
 
-    Ok(save)
+    if head_path.exists() {
+        let head = fs::read_to_string(head_path)?;
+        let existing_save = Save::load(&head)?;
+        if existing_save.tree.digest() != new_save.tree.digest() {
+            save_new_head(&new_save)?;
+            Ok(new_save)
+        } else {
+            Ok(existing_save)
+        }
+    } else {
+        save_new_head(&new_save)?;
+        Ok(new_save)
+    }
+}
+
+fn save_new_head(new_save: &Save) -> Result<()> {
+    let head_path = std::env::current_dir()?.join(REPO_ROOT).join("HEAD");
+    new_save.write_all()?;
+    fs::write(head_path, &new_save.digest)?;
+    Ok(())
 }

@@ -1,7 +1,7 @@
 use sha2::{Digest, Sha256};
 use std::{fs, path::PathBuf};
 
-use super::Object;
+use super::{Object, ObjectPath};
 use anyhow::Result;
 
 #[derive(Debug)]
@@ -32,5 +32,14 @@ impl Blob {
 
         let digest = format!("{:x}", hasher.finalize());
         Ok(Blob { digest, content })
+    }
+
+    pub fn load(hash: &str) -> Result<Blob> {
+        let file = ObjectPath::from(hash).file_name;
+        let content = fs::read_to_string(file)?;
+        Ok(Blob {
+            digest: hash.to_string(),
+            content,
+        })
     }
 }

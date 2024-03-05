@@ -17,16 +17,16 @@ pub trait Object {
     fn write(&self) -> Result<()> {
         let object_path = ObjectPath::from(self.digest());
 
-        if !object_path.path.exists() {
-            fs::create_dir_all(&object_path.path)?;
+        if !object_path.directory.exists() {
+            fs::create_dir_all(&object_path.directory)?;
         }
 
-        if !object_path.name.exists() {
+        if !object_path.file_name.exists() {
             let mut file = fs::OpenOptions::new()
                 .write(true)
                 .create(true)
                 .append(false)
-                .open(object_path.name)?;
+                .open(object_path.file_name)?;
 
             file.write_all(self.content().as_bytes())?;
         }
@@ -35,18 +35,21 @@ pub trait Object {
 }
 
 struct ObjectPath {
-    path: PathBuf,
-    name: PathBuf,
+    directory: PathBuf,
+    file_name: PathBuf,
 }
 
 impl ObjectPath {
     pub fn from(hash: &str) -> ObjectPath {
-        let path = RelativePath::new("objects/")
+        let directory = RelativePath::new("objects/")
             .join(&hash[0..3])
             .to_path(REPO_ROOT);
 
-        let name = path.join(&hash[3..]);
+        let file_name = directory.join(&hash[3..]);
 
-        ObjectPath { path, name }
+        ObjectPath {
+            directory,
+            file_name,
+        }
     }
 }

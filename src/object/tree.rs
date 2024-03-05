@@ -4,7 +4,7 @@ use anyhow::Result;
 use relative_path::RelativePath;
 use sha2::{Digest, Sha256};
 
-use super::{blob::Blob, Object};
+use super::{blob::Blob, Object, ObjectPath};
 use crate::REPO_ROOT;
 
 #[derive(Debug)]
@@ -84,6 +84,43 @@ impl Tree {
             trees,
             content,
             digest,
+        })
+    }
+
+    pub fn load(hash: &str) -> Result<Tree> {
+        let file = ObjectPath::from(hash).file_name;
+        let content = fs::read_to_string(file)?;
+        let lines = content.lines();
+        let mut blobs: Vec<Entry<Blob>> = Vec::new();
+        let mut trees: Vec<Entry<Tree>> = Vec::new();
+        for line in lines {
+            let mut parts = line.split_whitespace();
+            let t = parts.next().unwrap();
+            let path = parts.next().unwrap();
+            let hash = parts.next().unwrap();
+            match t {
+                "blob" => {
+                    let blob = Blob::load(hash)?;
+                    blobs.push(Entry {
+                        path: path.to_string(),
+                        object: blob,
+                    });
+                }
+                "tree" => {
+                    let tree = Tree::load(hash)?;
+                    trees.push(Entry {
+                        path: path.to_string(),
+                        object: tree,
+                    });
+                }
+                _ => {}
+            }
+        }
+        Ok(Tree {
+            blobs,
+            trees,
+            content,
+            digest: hash.to_string(),
         })
     }
 }
