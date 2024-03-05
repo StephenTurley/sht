@@ -2,9 +2,10 @@ pub mod blob;
 pub mod save;
 pub mod tree;
 
-use std::{fs, io::Write};
+use std::{fs, io::Write, path::PathBuf};
 
 use anyhow::Result;
+use relative_path::RelativePath;
 
 use crate::REPO_ROOT;
 
@@ -14,26 +15,38 @@ pub trait Object {
     fn t<'a>(&self) -> &'a str;
 
     fn write(&self) -> Result<()> {
-        // TODO use relative path here?
-        let blob_path = std::env::current_dir()?
-            .join(REPO_ROOT)
-            .join("objects/")
-            .join(&self.digest()[0..3]);
+        let object_path = ObjectPath::from(self.digest());
 
-        if !blob_path.exists() {
-            fs::create_dir_all(&blob_path)?;
+        if !object_path.path.exists() {
+            fs::create_dir_all(&object_path.path)?;
         }
-        let file_name = blob_path.join(&self.digest()[3..]);
 
-        if !file_name.exists() {
+        if !object_path.name.exists() {
             let mut file = fs::OpenOptions::new()
                 .write(true)
                 .create(true)
                 .append(false)
-                .open(file_name)?;
+                .open(object_path.name)?;
 
             file.write_all(self.content().as_bytes())?;
         }
         Ok(())
+    }
+}
+
+struct ObjectPath {
+    path: PathBuf,
+    name: PathBuf,
+}
+
+impl ObjectPath {
+    pub fn from(hash: &str) -> ObjectPath {
+        let path = RelativePath::new("objects/")
+            .join(&hash[0..3])
+            .to_path(REPO_ROOT);
+
+        let name = path.join(&hash[3..]);
+
+        ObjectPath { path, name }
     }
 }

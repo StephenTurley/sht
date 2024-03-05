@@ -60,6 +60,13 @@ impl Save {
     }
 }
 
+//return Save object
+// pub fn load(hash: &str) -> Result<()> {
+//     object_path(hash).join(&hash[3..]);
+//
+//     Ok(())
+// }
+//
 pub fn execute(path: &RelativePath) -> Result<Save> {
     let save = Save::create(path)?;
     save.write_all()?;
