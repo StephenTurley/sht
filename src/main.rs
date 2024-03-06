@@ -1,11 +1,13 @@
 use anyhow::{bail, Result};
-use clap::{Parser, Subcommand};
-use object::save;
+use clap::Parser;
+use command::save;
+use command::Commands;
 use relative_path::RelativePath;
 use std::fs;
 use std::path::Path;
 use thiserror::Error;
 
+pub mod command;
 pub mod object;
 
 static REPO_ROOT: &str = "./.sht";
@@ -18,23 +20,15 @@ struct Cli {
     command: Option<Commands>,
 }
 
-#[derive(Subcommand)]
-enum Commands {
-    /// Initialize a new repository
-    Init,
-    /// Save all files not explicitly ignored in the current working directory
-    Save,
-}
-
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::Init) => init(),
         Some(Commands::Save) => {
-            // todo: only save if there are changes
             save::execute(RelativePath::new("./"))?;
             Ok(())
         }
+        Some(Commands::Status) => bail!("Not implemented"),
         None => Ok(()),
     }
 }
