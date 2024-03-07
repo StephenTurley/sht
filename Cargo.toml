@@ -12,3 +12,6 @@ clap = { version = "4.5.1", features = ["derive"] }
 relative-path = "1.9.2"
 sha2 = "0.10.8"
 thiserror = "1.0.57"
+
+[dev-dependencies]
+tempfile = "3.10.1"

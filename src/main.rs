@@ -1,17 +1,7 @@
-use anyhow::{bail, Result};
+use anyhow::Result;
 use clap::Parser;
-use command::save;
-use command::status;
-use command::Commands;
 use relative_path::RelativePath;
-use std::fs;
-use std::path::Path;
-use thiserror::Error;
-
-pub mod command;
-pub mod object;
-
-static REPO_ROOT: &str = "./.sht";
+use sht::command::{init, save, status, Commands};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -24,7 +14,10 @@ struct Cli {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {
-        Some(Commands::Init) => init(),
+        Some(Commands::Init) => {
+            init::execute(RelativePath::new("./"))?;
+            Ok(())
+        }
         Some(Commands::Save) => {
             save::execute(RelativePath::new("./"))?;
             Ok(())
@@ -38,19 +31,4 @@ fn main() -> Result<()> {
         }
         None => Ok(()),
     }
-}
-
-#[derive(Error, Debug)]
-enum InitializationErrors {
-    #[error("Repository already exists")]
-    RepositoryExists,
-}
-
-fn init() -> Result<()> {
-    if Path::new(REPO_ROOT).exists() {
-        bail!(InitializationErrors::RepositoryExists)
-    }
-    fs::create_dir(REPO_ROOT)?;
-    fs::File::create(".shtignore")?;
-    Ok(())
 }
