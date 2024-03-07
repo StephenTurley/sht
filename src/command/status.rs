@@ -5,6 +5,7 @@ use relative_path::RelativePath;
 
 use crate::object::{save::Save, tree::Tree, Object};
 
+#[derive(Debug)]
 pub struct Status {
     pub modified: Vec<String>,
     pub added: Vec<String>,
