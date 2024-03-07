@@ -10,15 +10,15 @@ use crate::REPO_ROOT;
 #[derive(Debug)]
 pub struct Tree {
     digest: String,
-    blobs: Vec<Entry<Blob>>,
-    trees: Vec<Entry<Tree>>,
+    pub blobs: Vec<Entry<Blob>>,
+    pub trees: Vec<Entry<Tree>>,
     content: String,
 }
 
 #[derive(Debug)]
 pub struct Entry<T: Object> {
-    path: String,
-    object: T,
+    pub path: String,
+    pub object: T,
 }
 
 impl Object for Tree {

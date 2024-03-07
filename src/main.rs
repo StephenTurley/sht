@@ -1,6 +1,7 @@
 use anyhow::{bail, Result};
 use clap::Parser;
 use command::save;
+use command::status;
 use command::Commands;
 use relative_path::RelativePath;
 use std::fs;
@@ -28,7 +29,13 @@ fn main() -> Result<()> {
             save::execute(RelativePath::new("./"))?;
             Ok(())
         }
-        Some(Commands::Status) => bail!("Not implemented"),
+        Some(Commands::Status) => {
+            let status = status::execute()?;
+            println!("Added: {:?}", status.added);
+            println!("Modified: {:?}", status.modified);
+            println!("Removed: {:?}", status.removed);
+            Ok(())
+        }
         None => Ok(()),
     }
 }

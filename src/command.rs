@@ -1,6 +1,7 @@
 use clap::Subcommand;
 
 pub mod save;
+pub mod status;
 
 #[derive(Subcommand)]
 pub enum Commands {
