@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use relative_path::RelativePath;
 use sha2::{Digest, Sha256};
 
-use super::{Object, ObjectPath};
+use super::{write_object, Object, ObjectPath};
 
 pub struct Save {
     // TODO remove this when log implemented
@@ -28,6 +28,12 @@ impl Object for Save {
 
     fn t<'a>(&self) -> &'a str {
         "save"
+    }
+
+    fn write(&self) -> Result<()> {
+        write_object(self)?;
+        self.tree.write()?;
+        Ok(())
     }
 }
 
@@ -53,12 +59,6 @@ impl Save {
         };
 
         Ok(save)
-    }
-
-    pub fn write_all(&self) -> Result<()> {
-        self.write()?;
-        self.tree.write_all()?;
-        Ok(())
     }
 
     pub fn load(hash: &str) -> Result<Save> {

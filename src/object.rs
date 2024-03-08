@@ -13,25 +13,25 @@ pub trait Object {
     fn digest(&self) -> &str;
     fn content(&self) -> &str;
     fn t<'a>(&self) -> &'a str;
+    fn write(&self) -> Result<()>;
+}
+pub fn write_object(object: &impl Object) -> Result<()> {
+    let object_path = ObjectPath::from(object.digest());
 
-    fn write(&self) -> Result<()> {
-        let object_path = ObjectPath::from(self.digest());
-
-        if !object_path.directory.exists() {
-            fs::create_dir_all(&object_path.directory)?;
-        }
-
-        if !object_path.file_name.exists() {
-            let mut file = fs::OpenOptions::new()
-                .write(true)
-                .create(true)
-                .append(false)
-                .open(object_path.file_name)?;
-
-            file.write_all(self.content().as_bytes())?;
-        }
-        Ok(())
+    if !object_path.directory.exists() {
+        fs::create_dir_all(&object_path.directory)?;
     }
+
+    if !object_path.file_name.exists() {
+        let mut file = fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(false)
+            .open(object_path.file_name)?;
+
+        file.write_all(object.content().as_bytes())?;
+    }
+    Ok(())
 }
 
 struct ObjectPath {

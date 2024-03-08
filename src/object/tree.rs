@@ -4,7 +4,7 @@ use anyhow::Result;
 use relative_path::RelativePath;
 use sha2::{Digest, Sha256};
 
-use super::{blob::Blob, Object, ObjectPath};
+use super::{blob::Blob, write_object, Object, ObjectPath};
 use crate::REPO_ROOT;
 
 #[derive(Debug)]
@@ -33,21 +33,22 @@ impl Object for Tree {
     fn content(&self) -> &str {
         &self.content
     }
-}
 
-impl Tree {
-    pub fn write_all(&self) -> Result<()> {
+    fn write(&self) -> Result<()> {
         for entry in self.blobs.iter() {
             entry.object.write()?;
         }
         for entry in self.trees.iter() {
-            entry.object.write_all()?;
+            entry.object.write()?;
         }
-        self.write()?;
+
+        write_object(self)?;
         Ok(())
     }
+}
+
+impl Tree {
     pub fn create(path: &RelativePath) -> Result<Tree> {
-        // todo this needs to always be in the same order
         let mut blobs: Vec<Entry<Blob>> = Vec::new();
         let mut trees: Vec<Entry<Tree>> = Vec::new();
         let mut content: String = String::new();

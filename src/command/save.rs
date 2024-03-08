@@ -29,7 +29,7 @@ pub fn execute(path: &RelativePath) -> Result<Save> {
 
 fn save_new_head(new_save: &Save) -> Result<()> {
     let head_path = std::env::current_dir()?.join(REPO_ROOT).join("HEAD");
-    new_save.write_all()?;
+    new_save.write()?;
     fs::write(head_path, new_save.digest())?;
     Ok(())
 }

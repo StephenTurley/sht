@@ -1,7 +1,7 @@
 use sha2::{Digest, Sha256};
 use std::{fs, path::PathBuf};
 
-use super::{Object, ObjectPath};
+use super::{write_object, Object, ObjectPath};
 use anyhow::Result;
 
 #[derive(Debug)]
@@ -21,6 +21,10 @@ impl Object for Blob {
 
     fn content(&self) -> &str {
         &self.content
+    }
+
+    fn write(&self) -> Result<()> {
+        write_object(self)
     }
 }
 
